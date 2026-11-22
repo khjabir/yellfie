@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Yellfie — party games for your voice and your face</title>
+  <meta name="description" content="Yellfie is a browser party game pack. Shout, hum, clap, pull faces and strike poses — your mic and camera are the controllers.">
+  <meta name="theme-color" content="#2A0E5C">
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="preload" href="assets/fonts/BagelFatOne-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Setup: who is playing -->
+  <main id="setup" class="screen" hidden>
+    <div class="setup-wrap">
+      <div class="hero-mark"><img src="assets/logo.svg" alt=""></div>
+      <h1 class="wordmark hero-word" aria-label="Yellfie">Yellfie</h1>
+      <p class="tagline">Party games you play with your voice, your face and your whole body.</p>
+
+      <form class="card setup-card" id="addForm" autocomplete="off">
+        <h2>Who's playing?</h2>
+        <div class="add-row">
+          <label class="sr-only" for="nameInput">Player name</label>
+          <input id="nameInput" maxlength="16" placeholder="Type a name and press Enter">
+          <button class="btn btn-pink" type="submit">Add player</button>
+        </div>
+        <div class="chips" id="setupChips"></div>
+        <div class="setup-actions">
+          <button class="btn btn-go btn-big" type="button" id="startParty">Start the party</button>
+          <p class="privacy">Your browser will ask for the camera and microphone. Video and sound are analysed on this device and never uploaded.</p>
+          <div class="perm-error" id="permError" hidden></div>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Lobby: pick a game -->
+  <main id="lobby" class="screen" hidden>
+    <header class="topbar">
+      <a class="brand" href="#" id="brandLink" aria-label="Yellfie home">
+        <img src="assets/logo.svg" alt="">
+        <span class="wordmark" id="lobbyWord" aria-hidden="true"></span>
+        <span class="mic-dot" title="Mic is listening" aria-hidden="true"></span>
+      </a>
+      <button class="btn" id="openBoard"><span class="emoji">🏆</span> Leaderboard</button>
+      <button class="btn" id="openPlayers"><span class="emoji">👥</span> Players</button>
+      <button class="btn btn-icon" id="openSettings" aria-label="Settings"><span class="emoji">⚙️</span></button>
+    </header>
+
+    <section class="standings" id="standings" aria-label="Party standings"></section>
+
+    <div class="toolbar">
+      <div class="tabs" role="tablist" id="tabs"></div>
+      <span class="spacer"></span>
+      <button class="btn btn-mint" id="surprise"><span class="emoji">🎲</span> Surprise me</button>
+      <button class="btn btn-go" id="partyMode"><span class="emoji">🎉</span> Party mode: 5 games in a row</button>
+    </div>
+
+    <section class="grid" id="grid" aria-label="Games"></section>
+    <p class="footer-note">Tip: put the laptop on a table, stand about two steps back for body games, and lean in for face games.</p>
+  </main>
+
+  <!-- Stage: the game itself -->
+  <section id="stage" hidden aria-live="polite">
+    <canvas id="gameCanvas"></canvas>
+    <div class="hud" id="hud" hidden>
+      <div class="hud-timer" id="hudTimer" hidden><i></i></div>
+      <div class="hud-top">
+        <div class="hud-player" id="hudPlayer"></div>
+        <div class="hud-game" id="hudGame"></div>
+        <div class="hud-score" id="hudScore"></div>
+      </div>
+      <div class="hud-hint" id="hudHint" hidden></div>
+    </div>
+    <div class="stage-exit"><button class="btn" id="exitGame">Quit game</button></div>
+    <div id="overlayHost"></div>
+  </section>
+
+  <div id="modalHost"></div>
+  <canvas id="confetti"></canvas>
+  <video id="cam" playsinline muted autoplay hidden></video>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

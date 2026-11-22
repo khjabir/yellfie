@@ -1,0 +1,12 @@
+{
+  "name": "yellfie",
+  "version": "1.0.0",
+  "description": "Browser party games controlled by your voice, face and body. No server, no database.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "npx --yes serve -l 8080 .",
+    "vendor": "node scripts/fetch-vendor.mjs"
+  },
+  "license": "MIT"
+}
