@@ -131,7 +131,7 @@ Open **http://localhost:8080**. If something else uses that port, choose another
 | 😜 **Make That Face** | Copy five emoji with your face. Your best attempt is photographed. | 52 facial expression scores |
 | 💃 **Strike a Pose** | Match a glowing arm pose drawn on top of you. Sometimes it's a YMCA medley. | Arm angles |
 | 🧱 **Hole in the Wall** | A wall with a body-shaped hole flies at you. Fit through it. | Body position |
-| 🍉 **Fruit Karate** | Your index finger becomes a glowing sword. Slice fruit, avoid bombs. | Fingertips (both hands) |
+| 🍉 **Fruit Karate** | Your index finger becomes a glowing sword (fingertip, small, medium or large). Slice fruit, avoid bombs. | Fingertips (both hands) |
 | 🍩 **Chomp Champ** | Move your head and open wide to eat falling snacks. Avoid chillies and socks. | Mouth position and opening |
 | 👀 **Staring Contest** | Don't blink while the game throws flies, ghosts and fake-outs at you. | Eye blinks |
 | 😐 **Poker Face** | Keep a straight face while the screen gives you googly eyes and a moustache. | Smile and jaw |
@@ -163,6 +163,8 @@ Open the ⚙️ button in the lobby.
 | Mic check / Camera check | A live level meter and camera preview. |
 | Show tracking outlines | Draws your hand skeleton, face outline and arms during camera games. |
 | Challenges in a round | **Different for each player** (default) or **Same for everyone**, for the 7 games with set challenges. You can also switch it per game on its start screen or the podium. |
+
+Some games also have their own options on their start screen (and on the podium before **Play again**), remembered between parties. For example, Fruit Karate's **Sword length**: Fingertip only, Small (default), Medium or Large.
 | Reset scores / End party | Reset keeps the players and clears points, records and photos. End party removes everything. |
 
 ## Keyboard shortcuts
@@ -307,6 +309,7 @@ export default {
   crowd: 'What everyone else does meanwhile.',
   unit: 'points',
   variety: 'targets',               // optional: shows the same/different switch
+  options: [{ key: 'speed', label: 'Speed', default: 'normal', choices: [['slow', 'Slow'], ['normal', 'Normal']] }], // optional
   create(api) {
     return {
       start() {},                   // after the countdown
@@ -338,6 +341,7 @@ export default {
 | `fx`, `sfx`, `say(text)` | Particles and shake, sound effects, announcer |
 | `snap(cx, cy, size, meta)`, `keep(photo)` | Take a photo-booth picture and keep it |
 | `shared`, `deal(key, pool, n)` | Round content. `api.shared.x ||= api.deal('x', POOL, 5)` respects the same/different setting and avoids repeats |
+| `option(key)` | The player's choice for one of the game's `options` |
 | `outlines`, `u`, `W`, `H`, `time` | Outline setting, UI scale unit, canvas size, seconds since start |
 
 Optional game fields: `ready` (text on the "you're up" card), `format(score)`, `quip(score)` (a line on the score card).
