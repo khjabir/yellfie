@@ -6,6 +6,7 @@ import { initEngine, playGame, fmt, debug } from './engine.js';
 import { GAMES } from './games/index.js';
 import { enableSim } from './sim.js';
 import { confetti } from './fx.js';
+import { keepAwake, wakeStatus } from './wakelock.js';
 import { esc, sample, pick } from './util.js';
 
 const $ = (s) => document.querySelector(s);
@@ -53,6 +54,7 @@ function renderChips(host) {
 function refreshStart() { $('#startParty').disabled = state.players.length === 0; }
 
 function showSetup() {
+  keepAwake(false);
   $('#lobby').hidden = true; $('#setup').hidden = false;
   wordmark($('.hero-word'));
   renderChips($('#setupChips')); refreshStart();
@@ -82,6 +84,7 @@ function wordmark(el) {
   el.innerHTML = [...word].map((ch, i) => `<span style="--j:${jit[i]}">${ch}</span>`).join('');
 }
 function showLobby() {
+  keepAwake(state.settings.keepAwake !== false);
   $('#setup').hidden = true; $('#lobby').hidden = false;
   wordmark($('#lobbyWord')); renderLobby(); startLobbyMeter();
   if (!media.asked) ensureMedia().then(renderLobby);
@@ -209,6 +212,7 @@ function openSettings() {
     <div class="row"><label for="sSens">Mic sensitivity<small>Raise it if the bird won't fly. Lower it in a noisy room.</small></label><input type="range" id="sSens" min="1" max="10" step="1" value="${s.micSens}"></div>
     <div class="row"><label>Mic check<small>Say something — the bar should jump.</small></label><div class="meter" id="sMeter"><i></i></div></div>
     <div class="row"><label>Camera check</label><div class="cam-test" id="sCam"></div></div>
+    <div class="row"><label for="sAwake">Keep screen awake<small id="sAwakeNote">${esc(wakeStatus())}</small></label><input type="checkbox" class="switch" id="sAwake" ${s.keepAwake !== false ? 'checked' : ''}></div>
     <div class="row"><label for="sOutl">Show tracking outlines<small>Draws what the camera sees: your hands, face and arms. Helps you aim.</small></label><input type="checkbox" class="switch" id="sOutl" ${s.outlines !== false ? 'checked' : ''}></div>
     <h3>Challenges in a round</h3>
     <div class="row"><label>For ${GAMES.filter((g) => g.variety).length} games with set challenges<small>${esc(GAMES.filter((g) => g.variety).map((g) => g.name).join(', '))}. "Same" is fairest, "different" keeps it fresh. You can also switch it on each game's start screen.</small></label>
@@ -221,6 +225,7 @@ function openSettings() {
   el.querySelector('#sTts').onchange = (e) => { s.tts = e.target.checked; save(); if (s.tts) say('Announcer on!'); };
   el.querySelector('#sSfx').onchange = (e) => { s.sfx = e.target.checked; save(); sfx.coin(); };
   el.querySelector('#sOutl').onchange = (e) => { s.outlines = e.target.checked; save(); };
+  el.querySelector('#sAwake').onchange = (e) => { s.keepAwake = e.target.checked; save(); keepAwake(s.keepAwake); setTimeout(() => (el.querySelector('#sAwakeNote').textContent = wakeStatus()), 400); };
   el.querySelector('#sVol').oninput = (e) => { s.gameVolume = +e.target.value; save(); audioCtx(); };
   el.querySelector('#sVol').onchange = () => sfx.coin();
   el.querySelector('#sSens').oninput = (e) => { s.micSens = +e.target.value; save(); };

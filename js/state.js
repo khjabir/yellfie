@@ -5,7 +5,7 @@ export const AVATARS = ['🦊', '🐸', '🐼', '🦄', '🐙', '🦁', '🐯', 
 export const RANK_POINTS = [10, 7, 5, 3, 2];
 
 function fresh() {
-  return { players: [], totals: {}, history: [], records: {}, settings: { tts: true, sfx: true, micSens: 5, gameVolume: 0.7, roundMode: 'mixed', gameModes: {}, outlines: true } };
+  return { players: [], totals: {}, history: [], records: {}, settings: { tts: true, sfx: true, micSens: 5, gameVolume: 0.7, roundMode: 'mixed', gameModes: {}, outlines: true, keepAwake: true } };
 }
 function load() {
   try {
@@ -39,6 +39,9 @@ export const playerById = (id) => state.players.find((p) => p.id === id);
 // 'mixed' = every player gets their own challenges, 'same' = everyone in a round gets identical ones
 export function modeFor(game) { return state.settings.gameModes?.[game.id] || state.settings.roundMode || 'mixed'; }
 export function setGameMode(id, mode) { (state.settings.gameModes ||= {})[id] = mode; save(); }
+// per-game options (e.g. Fruit Karate's sword length), remembered between parties
+export function optFor(game, key) { const o = game.options?.find((x) => x.key === key); return state.settings.gameOptions?.[game.id]?.[key] ?? o?.default; }
+export function setGameOption(id, key, val) { ((state.settings.gameOptions ||= {})[id] ||= {})[key] = val; save(); }
 export function setDefaultMode(mode) { state.settings.roundMode = mode; state.settings.gameModes = {}; save(); }
 export function totalsFor(id) { return (state.totals[id] ||= { points: 0, wins: 0, played: 0 }); }
 

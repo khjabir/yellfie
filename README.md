@@ -161,6 +161,7 @@ Open the ⚙️ button in the lobby.
 | Sound effects / Game volume | Turns the synthesised sounds on or off and sets their volume. |
 | Mic sensitivity | Raise it if the voice games don't react; lower it in a loud room. Each voice game also measures background noise during the countdown. |
 | Mic check / Camera check | A live level meter and camera preview. |
+| Keep screen awake | On by default. Stops phones, tablets and laptops from dimming or locking during the party (Screen Wake Lock API). The note under it shows whether your browser allowed it. |
 | Show tracking outlines | Draws your hand skeleton, face outline and arms during camera games. |
 | Challenges in a round | **Different for each player** (default) or **Same for everyone**, for the 7 games with set challenges. You can also switch it per game on its start screen or the podium. |
 
@@ -232,6 +233,12 @@ Add light in front of you and avoid a bright window behind you. Close other tabs
 </details>
 
 <details>
+<summary><b>The phone or tablet screen dims and locks mid-game</b></summary>
+
+Yellfie keeps the screen awake with the Screen Wake Lock API (Chrome/Edge on Android, Safari on iOS 16.4+, Firefox 126+), as long as **Settings → Keep screen awake** is on. The page must be served over `https://` (or `localhost`). Battery-saver / Low Power Mode can make the device refuse, and the note under the setting will tell you. On older browsers, raise *Auto-Lock* (iOS: *Settings → Display & Brightness*) or *Screen timeout* (Android: *Settings → Display*) while you play.
+</details>
+
+<details>
 <summary><b>"The tracker could not load"</b></summary>
 
 If `vendor/` is missing, the first camera game downloads the trackers (~10–15 MB) from a CDN, which needs an internet connection. Run `npm run vendor` once to bundle them locally.
@@ -262,6 +269,7 @@ yellfie/
 │   ├── sfx.js              Synthesised sound effects and the speech announcer
 │   ├── fx.js               Particles, banners, screen shake, confetti
 │   ├── util.js             Math and canvas drawing helpers
+│   ├── wakelock.js         Keeps the screen awake during the party
 │   ├── sim.js              Developer mode (?sim)
 │   └── games/
 │       ├── index.js        Game registry
