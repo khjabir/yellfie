@@ -18,6 +18,10 @@
   --line: 3px solid var(--ink);
   --pop: 0 5px 0 var(--ink);
   --vol: 0;
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
 }
 
 * { box-sizing: border-box; }
@@ -86,7 +90,8 @@ img { max-width: 100%; display: block; }
 /* ---------- setup screen ---------- */
 .screen { min-height: 100vh; }
 #setup {
-  display: grid; place-items: center; padding: 32px 20px 48px;
+  display: grid; place-items: center;
+  padding: calc(32px + var(--sat)) calc(20px + var(--sar)) calc(48px + var(--sab)) calc(20px + var(--sal));
 }
 .setup-wrap { width: min(640px, 100%); text-align: center; }
 .hero-mark { width: min(300px, 62vw); margin: 0 auto -8px; filter: drop-shadow(0 0 0 transparent); }
@@ -127,7 +132,7 @@ img { max-width: 100%; display: block; }
 .perm-error { background: #FFE1E6; border: 2.5px solid var(--red); border-radius: 14px; padding: 10px 14px; color: #7a0f22; font-weight: 600; margin-top: 12px; }
 
 /* ---------- lobby ---------- */
-#lobby { padding: 18px clamp(14px, 3vw, 40px) 60px; max-width: 1400px; margin: 0 auto; }
+#lobby { padding: calc(18px + var(--sat)) calc(clamp(14px, 3vw, 40px) + var(--sar)) calc(60px + var(--sab)) calc(clamp(14px, 3vw, 40px) + var(--sal)); max-width: 1400px; margin: 0 auto; }
 .topbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-right: auto; }
 .brand img { width: 74px; }
@@ -182,7 +187,8 @@ img { max-width: 100%; display: block; }
 /* ---------- modal ---------- */
 .modal-back {
   position: fixed; inset: 0; background: rgba(26,16,51,.72); z-index: 50;
-  display: grid; place-items: center; padding: 20px; overflow-y: auto;
+  display: grid; place-items: center; overflow-y: auto;
+  padding: calc(20px + var(--sat)) calc(20px + var(--sar)) calc(20px + var(--sab)) calc(20px + var(--sal));
 }
 .modal { width: min(620px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; position: relative; }
 .modal h2 { font-family: var(--display); font-weight: 400; font-size: 2rem; margin: 0 0 14px; }
@@ -214,8 +220,8 @@ input[type=range] { accent-color: var(--pink); width: 180px; }
 
 /* ---------- stage ---------- */
 #stage { position: fixed; inset: 0; background: var(--ink); z-index: 20; overflow: hidden; }
-#stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.hud { position: absolute; inset: 0; pointer-events: none; }
+#stage canvas { position: absolute; top: var(--sat); left: var(--sal); width: calc(100% - var(--sal) - var(--sar)); height: calc(100% - var(--sat) - var(--sab)); display: block; }
+.hud { position: absolute; inset: var(--sat) var(--sar) var(--sab) var(--sal); pointer-events: none; }
 .hud-top { position: absolute; top: 14px; left: 14px; right: 14px; display: flex; align-items: flex-start; gap: 12px; }
 .hud-player {
   display: inline-flex; align-items: center; gap: 10px; padding: 6px 16px 6px 6px;
@@ -237,11 +243,12 @@ input[type=range] { accent-color: var(--pink); width: 180px; }
   background: var(--ink); color: var(--cream); padding: 10px 20px; border-radius: 16px; border: 3px solid var(--cream);
   font-weight: 800; font-size: 1.3rem; max-width: min(90vw, 760px); text-align: center;
 }
-.stage-exit { position: absolute; top: 80px; left: 14px; pointer-events: auto; z-index: 8; }
+.stage-exit { position: absolute; top: calc(80px + var(--sat)); left: calc(14px + var(--sal)); pointer-events: auto; z-index: 8; }
 .stage-exit .btn { min-height: 40px; padding: .35em .9em; font-size: .9rem; }
 
 .overlay {
-  position: absolute; inset: 0; display: grid; place-items: center; padding: 20px;
+  position: absolute; inset: 0; display: grid; place-items: center;
+  padding: calc(20px + var(--sat)) calc(20px + var(--sar)) calc(20px + var(--sab)) calc(20px + var(--sal));
   background: rgba(26,16,51,.55); z-index: 5; overflow-y: auto;
 }
 .overlay.clear { background: transparent; pointer-events: none; }
@@ -312,7 +319,7 @@ input[type=range] { accent-color: var(--pink); width: 180px; }
 #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 60; width: 100%; height: 100%; }
 
 .toast {
-  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 70;
+  position: fixed; bottom: calc(22px + var(--sab)); left: 50%; transform: translateX(-50%); z-index: 70;
   background: var(--ink); color: var(--cream); border: 3px solid var(--sun); border-radius: 14px; padding: 10px 18px; font-weight: 700;
 }
 

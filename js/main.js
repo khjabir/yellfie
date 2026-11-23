@@ -7,6 +7,7 @@ import { GAMES } from './games/index.js';
 import { enableSim } from './sim.js';
 import { confetti } from './fx.js';
 import { keepAwake, wakeStatus } from './wakelock.js';
+import { pwa, initPwa, onPwaChange, promptInstall, offlineStatus, downloadTrackers } from './pwa.js';
 import { esc, sample, pick } from './util.js';
 
 const $ = (s) => document.querySelector(s);
@@ -148,6 +149,18 @@ $('#partyMode').onclick = () => {
 $('#brandLink').onclick = (e) => { e.preventDefault(); };
 $('#openBoard').onclick = () => openBoard();
 $('#openSettings').onclick = () => openSettings();
+$('#installApp').onclick = () => installApp();
+function refreshInstall() { $('#installApp').hidden = pwa.installed || !(pwa.canPrompt || pwa.iosManual); }
+onPwaChange(refreshInstall);
+async function installApp() {
+  if (pwa.canPrompt) { if (await promptInstall()) toast('Installed! Open Yellfie from your home screen or apps.'); return; }
+  if (pwa.iosManual) modal(`<h2>Install on iPhone or iPad</h2>
+    <ol class="howto" style="list-style:decimal;padding-left:1.4em">
+      <li style="display:list-item">In Safari, tap the <b>Share</b> button <span class="emoji">⬆️</span> (bottom bar on iPhone, top bar on iPad).</li>
+      <li style="display:list-item">Scroll down and tap <b>Add to Home Screen</b>.</li>
+      <li style="display:list-item">Tap <b>Add</b>. Yellfie now opens full screen from its own icon.</li>
+    </ol>`);
+}
 $('#openPlayers').onclick = () => openPlayers();
 // browsers only let audio start after a tap or key press
 ['pointerdown', 'keydown'].forEach((ev) => document.addEventListener(ev, () => audioCtx(), { passive: true }));
@@ -214,6 +227,9 @@ function openSettings() {
     <div class="row"><label>Camera check</label><div class="cam-test" id="sCam"></div></div>
     <div class="row"><label for="sAwake">Keep screen awake<small id="sAwakeNote">${esc(wakeStatus())}</small></label><input type="checkbox" class="switch" id="sAwake" ${s.keepAwake !== false ? 'checked' : ''}></div>
     <div class="row"><label for="sOutl">Show tracking outlines<small>Draws what the camera sees: your hands, face and arms. Helps you aim.</small></label><input type="checkbox" class="switch" id="sOutl" ${s.outlines !== false ? 'checked' : ''}></div>
+    <h3>App</h3>
+    <div class="row"><label>Install as an app<small id="sInstallNote">${esc(installNote())}</small></label>${pwa.canPrompt || pwa.iosManual ? '<button class="btn btn-mint" id="sInstall">Install</button>' : ''}</div>
+    ${pwa.offlineCapable ? `<div class="row"><label>Offline play<small id="sOfflineNote">Checking…</small></label><button class="btn" id="sOffline" hidden>Download for offline</button></div>` : ''}
     <h3>Challenges in a round</h3>
     <div class="row"><label>For ${GAMES.filter((g) => g.variety).length} games with set challenges<small>${esc(GAMES.filter((g) => g.variety).map((g) => g.name).join(', '))}. "Same" is fairest, "different" keeps it fresh. You can also switch it on each game's start screen.</small></label>
       <div class="seg" id="sMode" role="group" aria-label="Challenges in a round">${[['mixed', 'Different'], ['same', 'Same']].map(([k, l]) => `<button type="button" data-mode="${k}" aria-pressed="${(state.settings.roundMode || 'mixed') === k && !Object.keys(state.settings.gameModes || {}).length}">${l}</button>`).join('')}</div></div>
@@ -225,6 +241,21 @@ function openSettings() {
   el.querySelector('#sTts').onchange = (e) => { s.tts = e.target.checked; save(); if (s.tts) say('Announcer on!'); };
   el.querySelector('#sSfx').onchange = (e) => { s.sfx = e.target.checked; save(); sfx.coin(); };
   el.querySelector('#sOutl').onchange = (e) => { s.outlines = e.target.checked; save(); };
+  el.querySelector('#sInstall')?.addEventListener('click', () => { m.close(); installApp(); });
+  const offNote = el.querySelector('#sOfflineNote'), offBtn = el.querySelector('#sOffline');
+  const showOffline = (s) => {
+    if (!offNote) return;
+    const ready = s.total && s.saved === s.total;
+    offNote.textContent = ready ? 'Ready. Every game works without internet.' : `Voice games already work offline. Camera games need their trackers saved first (about 32 MB, ${s.saved} of ${s.total} saved). Each one is also saved the first time you play it.`;
+    offBtn.hidden = ready;
+  };
+  if (offNote) offlineStatus().then(showOffline).catch(() => (offNote.textContent = 'Not available in this browser.'));
+  offBtn?.addEventListener('click', async () => {
+    offBtn.disabled = true;
+    try { showOffline(await downloadTrackers((f) => (offBtn.textContent = `Downloading… ${Math.round(f * 100)}%`))); toast('Saved. Camera games now work offline.'); }
+    catch (e) { offNote.textContent = 'Download failed. Check your connection and try again.'; }
+    offBtn.disabled = false; offBtn.textContent = 'Download for offline';
+  });
   el.querySelector('#sAwake').onchange = (e) => { s.keepAwake = e.target.checked; save(); keepAwake(s.keepAwake); setTimeout(() => (el.querySelector('#sAwakeNote').textContent = wakeStatus()), 400); };
   el.querySelector('#sVol').oninput = (e) => { s.gameVolume = +e.target.value; save(); audioCtx(); };
   el.querySelector('#sVol').onchange = () => sfx.coin();
@@ -243,6 +274,12 @@ function openSettings() {
   if (vision.camReady && vision.video?.srcObject) { const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.srcObject = vision.video.srcObject; v.play().catch(() => {}); camBox.append(v); }
   else camBox.innerHTML = '<p style="color:#fff;padding:10px;font-size:.85rem">Camera is off</p>';
 }
+function installNote() {
+  if (pwa.installed) return 'Installed. You are using the app version.';
+  if (pwa.canPrompt) return 'Adds Yellfie to your home screen or apps, opens full screen and works offline.';
+  if (pwa.iosManual) return 'Adds Yellfie to your home screen and opens it full screen.';
+  return "Use your browser's menu: Install app, or Add to Home Screen.";
+}
 function confirmBtn(btn, msg) { if (btn.dataset.armed) return true; btn.dataset.armed = '1'; btn.textContent = msg; setTimeout(() => { delete btn.dataset.armed; }, 3000); return false; }
 
 let toastT = 0;
@@ -253,5 +290,6 @@ function toast(msg) {
 
 // ---------- boot ----------
 initEngine();
+initPwa(); refreshInstall();
 if (SIM) window.__yf.engine = debug;
 if (state.players.length) showLobby(); else showSetup();

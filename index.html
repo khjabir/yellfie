@@ -6,7 +6,14 @@
   <title>Yellfie — party games for your voice and your face</title>
   <meta name="description" content="Yellfie is a browser party game pack. Shout, hum, clap, pull faces and strike poses — your mic and camera are the controllers.">
   <meta name="theme-color" content="#2A0E5C">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Yellfie">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preload" href="assets/fonts/BagelFatOne-400-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -43,6 +50,7 @@
         <span class="wordmark" id="lobbyWord" aria-hidden="true"></span>
         <span class="mic-dot" title="Mic is listening" aria-hidden="true"></span>
       </a>
+      <button class="btn btn-mint" id="installApp" hidden><span class="emoji">📲</span> Install app</button>
       <button class="btn" id="openBoard"><span class="emoji">🏆</span> Leaderboard</button>
       <button class="btn" id="openPlayers"><span class="emoji">👥</span> Players</button>
       <button class="btn btn-icon" id="openSettings" aria-label="Settings"><span class="emoji">⚙️</span></button>

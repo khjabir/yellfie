@@ -37,6 +37,12 @@ async function loadLib() {
   fileset = await mp.FilesetResolver.forVisionTasks(CDN_WASM);
 }
 
+export async function trackerUrls() {
+  const models = Object.values(MODELS);
+  if (await exists(LOCAL_LIB)) return [LOCAL_LIB, `${LOCAL_WASM}/vision_wasm_internal.js`, `${LOCAL_WASM}/vision_wasm_internal.wasm`, ...models.map((m) => new URL(m[0], import.meta.url).href)];
+  return [CDN_LIB, `${CDN_WASM}/vision_wasm_internal.js`, `${CDN_WASM}/vision_wasm_internal.wasm`, ...models.map((m) => m[1])];
+}
+
 export function modelReady(kind) { return vision.sim ? true : kind === 'face' ? !!faceLm : kind === 'pose' ? !!poseLm : !!handLm; }
 
 export function ensureModel(kind, onProgress) {

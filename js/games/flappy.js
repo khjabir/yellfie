@@ -103,7 +103,7 @@ export default {
 
 // vertical voice meter shared by voice games
 export function meter(g, api, x, y, mark = null, h = null) {
-  const u = api.u; h = h ?? api.H * 0.38; const w = 26 * u;
+  const u = api.u; y = Math.max(y, 132); h = Math.min(h ?? api.H * 0.38, api.H - y - 60 * u); const w = 26 * u; // stay below the Quit button
   blob(g, x, y, w, h, w / 2, C.cream, { lw: 4 });
   const lv = clamp(api.mic.level); const fh = (h - 8) * lv;
   rrect(g, x + 4, y + h - 4 - fh, w - 8, fh, (w - 8) / 2); g.fillStyle = C.pink; g.fill();

@@ -1,0 +1,26 @@
+{
+  "id": "./",
+  "name": "Yellfie — party games for your voice and your face",
+  "short_name": "Yellfie",
+  "description": "Party games you play with your voice, your face and your whole body. Shout, hum, clap, pull faces and strike poses — your mic and camera are the controllers.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#2A0E5C",
+  "theme_color": "#2A0E5C",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "screenshots": [
+    { "src": "docs/screenshots/lobby.jpg", "sizes": "1280x800", "type": "image/jpeg", "form_factor": "wide", "label": "Pick from 17 voice and camera party games" },
+    { "src": "docs/screenshots/roar.jpg", "sizes": "1280x800", "type": "image/jpeg", "form_factor": "wide", "label": "Roar-o-Meter: one giant roar to ring the bell" },
+    { "src": "docs/screenshots/mobile-lobby.jpg", "sizes": "780x1688", "type": "image/jpeg", "form_factor": "narrow", "label": "Party standings and games" },
+    { "src": "docs/screenshots/mobile-setup.jpg", "sizes": "780x1688", "type": "image/jpeg", "form_factor": "narrow", "label": "Add the players" }
+  ]
+}

@@ -13,12 +13,13 @@
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-FF2E88"></a>
   <img alt="Games: 17" src="https://img.shields.io/badge/games-17-FFD23F">
   <img alt="No build step" src="https://img.shields.io/badge/build-none-3DF5C4">
-  <img alt="Works offline" src="https://img.shields.io/badge/works-offline-4DA8FF">
+  <img alt="Installable PWA" src="https://img.shields.io/badge/PWA-installable-4DA8FF">
   <img alt="Powered by MediaPipe" src="https://img.shields.io/badge/tracking-MediaPipe-7B2FFF">
 </p>
 
 <p align="center">
   <a href="#quick-start">Quick start</a> •
+  <a href="#install-as-an-app">Install as an app</a> •
   <a href="#the-games">Games</a> •
   <a href="#troubleshooting">Troubleshooting</a> •
   <a href="#adding-a-new-game">Add a game</a> •
@@ -35,6 +36,7 @@
 - [Features](#features)
 - [Screenshots](#screenshots)
 - [Quick start](#quick-start)
+- [Install as an app](#install-as-an-app)
 - [The games](#the-games)
 - [Scoring](#scoring)
 - [Settings](#settings)
@@ -65,7 +67,8 @@ There is **no server, no account and no database**. It's a static web page: came
 - **Crowd jobs**: every game gives the people watching something to do.
 - **Announcer, sounds and effects**: an optional spoken host, synthesised sound effects (no audio files), confetti and screen shake.
 - **Tracking outlines**: an optional overlay of your hand skeleton, face outline and arms, so players can see what the camera sees.
-- **Offline-ready**: tracking models and fonts are bundled, so it works without internet after the first download of the repo.
+- **Installable app (PWA)**: add it to your home screen, dock or apps list. It opens full screen with its own icon and works offline.
+- **Keeps the screen awake** during the party, so phones don't dim or lock mid-game.
 - **No build step**: plain HTML, CSS and ES modules. Every game is one file.
 
 ## Screenshots
@@ -108,6 +111,34 @@ Open **http://localhost:8080**. If something else uses that port, choose another
 4. Read the instructions card, press **Start**, and follow the "you're up" prompts.
 
 **Room setup tips:** put the laptop on a table, mirrored to a TV if you can. Lean in for face and voice games, and stand about two steps back for body games. Good front lighting makes face tracking far more reliable.
+
+## Install as an app
+
+Yellfie is a Progressive Web App, so you can install it like a regular app. It opens full screen, gets its own icon and keeps working without internet.
+
+| Device | How to install |
+| --- | --- |
+| Android (Chrome, Edge, Samsung Internet) | Tap **📲 Install app** in the lobby, or the browser menu → *Install app* / *Add to Home screen*. |
+| iPhone / iPad (Safari) | Tap **📲 Install app** for the steps: *Share* → *Add to Home Screen* → *Add*. |
+| Windows, macOS, Linux (Chrome, Edge) | Click **📲 Install app**, or the install icon in the address bar. |
+| macOS (Safari 17+) | *File* → *Add to Dock*. |
+
+Installing needs the site to be served over `https://` (or `localhost`).
+
+### Offline play
+
+- **After the first visit**, the app itself and the **voice games** work offline (except Tongue Twister Turbo, which needs the browser's online speech recognition).
+- **Camera games** also need their trackers (about 32 MB). Each one is saved the first time you play a game that uses it. To save them all at once, use **Settings → Offline play → Download for offline**. Nothing large is downloaded unless you need it.
+
+### Updates and performance
+
+The service worker is built to cost nothing when you're online and never serve outdated code:
+
+- **Online**, the browser loads the app exactly as it would without a service worker, so updates show up straight away. After each load, while the browser is idle, the service worker keeps a copy of the files the page just used, for offline play.
+- **Offline**, it serves that copy.
+- **The tracker files** (pinned versions) are served from the cache once saved, so camera games start faster.
+
+Measured side by side (median of 9 reloads, two rounds): page-ready time stayed within about ±12 ms of the version without a service worker, which is measurement noise. Tracker files loaded 15–27% faster. On a real connection the tracker saving is bigger, because cached files are never re-checked or re-downloaded.
 
 ## The games
 
@@ -163,6 +194,8 @@ Open the ⚙️ button in the lobby.
 | Mic check / Camera check | A live level meter and camera preview. |
 | Keep screen awake | On by default. Stops phones, tablets and laptops from dimming or locking during the party (Screen Wake Lock API). The note under it shows whether your browser allowed it. |
 | Show tracking outlines | Draws your hand skeleton, face outline and arms during camera games. |
+| Install as an app | Shows whether Yellfie is installed, with an **Install** button where the browser supports it. |
+| Offline play | Shows how many trackers are saved, with **Download for offline** to save all of them (about 32 MB). |
 | Challenges in a round | **Different for each player** (default) or **Same for everyone**, for the 7 games with set challenges. You can also switch it per game on its start screen or the podium. |
 
 Some games also have their own options on their start screen (and on the podium before **Play again**), remembered between parties. For example, Fruit Karate's **Sword length**: Fingertip only, Small (default), Medium or Large.
@@ -184,21 +217,23 @@ Yellfie is developed and tested in **Google Chrome** on desktop. The other brows
 | Chrome / Edge (desktop) | ✅ All 17 games |
 | Safari (macOS) | Expected to work, untested |
 | Firefox | Expected to work except **Tongue Twister Turbo**, which needs the Web Speech API that Firefox lacks |
-| Phones and tablets | The UI is responsive, but the games are designed for a laptop-sized screen viewed from a few steps away |
+| Phones and tablets | Works and can be installed as an app; the layout keeps clear of notches. The games are designed for a laptop-sized screen viewed from a few steps away, so a tablet or phone propped up works best |
 
 ## Deploying
 
-Yellfie is a static site, so any static host works: GitHub Pages, Netlify, Vercel, Cloudflare Pages or your own server. It must be served over **HTTPS**, or browsers will block the camera and microphone.
+Yellfie is a static site, so any static host works: GitHub Pages, Netlify, Vercel, Cloudflare Pages or your own server. It must be served over **HTTPS**, or browsers will block the camera, microphone, installing and offline mode. It works from a sub-path such as `/yellfie/`, because every path is relative.
 
 **GitHub Pages:** in the repo open *Settings → Pages*, choose *Deploy from a branch*, and pick `main` / root. The game will be live at `https://khjabir.github.io/yellfie/`. The bundled files in `vendor/` are each well under GitHub's 100 MB file limit.
 
 ### Bundled tracking files (`vendor/`)
 
-The MediaPipe library and the face, body and hand models (~32 MB) are kept in `vendor/` so the app works offline. If you'd rather not commit them, add `vendor/` to `.gitignore`. The app then loads the same pinned files from the jsDelivr and Google CDNs automatically. To download them again:
+The MediaPipe library and the face, body and hand models (~32 MB) are kept in `vendor/` so the app works offline. If you'd rather not commit them, add `vendor/` to `.gitignore`. The app then loads the same pinned files from the jsDelivr and Google CDNs automatically, and the service worker caches those too. To download them again:
 
 ```bash
 npm run vendor
 ```
+
+If you ever **change** the files in `vendor/` (for example a newer MediaPipe), bump the `TRACKERS` cache name at the top of `sw.js` (and in `js/pwa.js`) so installed copies pick up the new files.
 
 ## Privacy
 
@@ -212,6 +247,18 @@ npm run vendor
 <summary><b>The page shows a different app, or the server logs 404s for files like <code>/styles.css</code> or <code>/src/main.js</code></b></summary>
 
 Another project that used the same port left a cached copy or a **service worker** behind in the browser, and it is still serving that project for `localhost:<port>`. Either run Yellfie on a different port (`python3 -m http.server 8090`), or open the page, go to *DevTools → Application → Storage* and click **Clear site data**, then reload.
+</details>
+
+<details>
+<summary><b>While developing, I want to switch the service worker off</b></summary>
+
+Open the app with `?nosw` (e.g. `http://localhost:8080/?nosw`). That removes Yellfie's service worker and its caches for that address. Reload without the parameter to turn it back on. Use this before reusing the same port for a different project.
+</details>
+
+<details>
+<summary><b>The installed app looks out of date</b></summary>
+
+When online, the app loads the latest files exactly as a normal web page would. If your host caches files for a while (GitHub Pages caches for up to 10 minutes), pull to refresh or reopen the app after a few minutes. Offline, it shows the version from your last online visit.
 </details>
 
 <details>
@@ -235,7 +282,7 @@ Add light in front of you and avoid a bright window behind you. Close other tabs
 <details>
 <summary><b>The phone or tablet screen dims and locks mid-game</b></summary>
 
-Yellfie keeps the screen awake with the Screen Wake Lock API (Chrome/Edge on Android, Safari on iOS 16.4+, Firefox 126+), as long as **Settings → Keep screen awake** is on. The page must be served over `https://` (or `localhost`). Battery-saver / Low Power Mode can make the device refuse, and the note under the setting will tell you. On older browsers, raise *Auto-Lock* (iOS: *Settings → Display & Brightness*) or *Screen timeout* (Android: *Settings → Display*) while you play.
+Yellfie keeps the screen awake with the Screen Wake Lock API (Chrome/Edge on Android, Safari on iOS 16.4+, Firefox 126+), as long as **Settings → Keep screen awake** is on. If it still dims in the home-screen app on an older iPhone, open Yellfie in Safari instead. The page must be served over `https://` (or `localhost`). Battery-saver / Low Power Mode can make the device refuse, and the note under the setting will tell you. On older browsers, raise *Auto-Lock* (iOS: *Settings → Display & Brightness*) or *Screen timeout* (Android: *Settings → Display*) while you play.
 </details>
 
 <details>
@@ -257,6 +304,8 @@ It needs a browser with the Web Speech API (Chrome, Edge, Safari) and, in Chrome
 ```
 yellfie/
 ├── index.html              App shell
+├── manifest.webmanifest    PWA manifest (name, icons, colours, screenshots)
+├── sw.js                   Service worker (offline support, tracker cache)
 ├── css/
 │   ├── style.css           All styles (design tokens at the top)
 │   └── fonts.css           Self-hosted font faces
@@ -270,12 +319,13 @@ yellfie/
 │   ├── fx.js               Particles, banners, screen shake, confetti
 │   ├── util.js             Math and canvas drawing helpers
 │   ├── wakelock.js         Keeps the screen awake during the party
+│   ├── pwa.js              Service worker registration, install button, offline download
 │   ├── sim.js              Developer mode (?sim)
 │   └── games/
 │       ├── index.js        Game registry
 │       ├── body.js         Shared pose/hand/face helpers and outlines
 │       └── *.js            One file per game
-├── assets/                 Logo and fonts
+├── assets/                 Logo, app icons and fonts
 ├── vendor/                 MediaPipe library and models (optional, see Deploying)
 ├── scripts/fetch-vendor.mjs
 └── docs/screenshots/

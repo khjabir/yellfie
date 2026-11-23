@@ -2,7 +2,7 @@
 import { mic, updateMic, startCalibration, endCalibration } from './mic.js';
 import { vision, updateVision, ensureModel, modelReady, drawVideo, toScreen, lenToScreen, bodyParts } from './vision.js';
 import { sfx, say, hush } from './sfx.js';
-import { state, awardRound, gallery, playerById, modeFor, setGameMode } from './state.js';
+import { state, awardRound, gallery, playerById, modeFor, setGameMode, optFor, setGameOption } from './state.js';
 import { Fx, confetti } from './fx.js';
 import * as U from './util.js';
 
@@ -28,7 +28,7 @@ export function initEngine() {
 }
 
 function resize() {
-  dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight;
+  dpr = Math.min(2, devicePixelRatio || 1); W = canvas.clientWidth || innerWidth; H = canvas.clientHeight || innerHeight;
   canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
 }
 
@@ -164,6 +164,7 @@ async function intro(game, order) {
       <p class="sub">${esc(game.tagline)}</p>
       <ul class="howto">${game.howTo.map((h) => `<li>${esc(h)}</li>`).join('')}</ul>
       ${game.crowd ? `<div class="crowd"><span class="emoji">📣</span> ${esc(game.crowd)}</div>` : ''}
+      ${optionControls(game)}
       ${modeControl(game)}
       <div class="order">${order.map((p, i) => chip(p, `<span class="n">${i + 1}</span>`)).join('')}</div>
       ${problems.length ? `<div class="perm-error">${problems.map(esc).join('<br>')}</div>` : ''}
@@ -179,7 +180,7 @@ async function intro(game, order) {
       .then(() => { msg.textContent = 'Tracker ready.'; btn.disabled = false; btn.focus(); })
       .catch((e) => { console.error(e); msg.textContent = 'The tracker could not load. Check your internet connection (first load downloads about 10 MB), then try again.'; });
   }
-  wireMode(el, game);
+  wireMode(el, game); wireOptions(el, game);
   say(`${game.name}! ${game.tagline}`, { interrupt: true });
   return waitAction(el);
 }
@@ -295,6 +296,7 @@ async function podium(game, results, partyNext) {
       <div class="podium-base"></div>
       <ol class="res-list">${sorted.map((r) => `<li><span class="rk">${r.rank}</span><span class="av emoji" style="--c:${P(r).color}">${P(r).avatar}</span>${esc(P(r).name)}<span class="sc">${esc(fmt(game, r.score))} ${esc(game.unit || '')}</span><span class="plus">+${r.points}</span></li>`).join('')}</ol>
       ${best.length ? `<div class="snaps">${best.map(snapHtml).join('')}</div>` : ''}
+      ${optionControls(game)}
       ${modeControl(game, true)}
       <div class="panel-actions">
         <button class="btn" data-act="lobby">Back to games</button>
@@ -303,7 +305,7 @@ async function podium(game, results, partyNext) {
       </div>
     </div>`);
   if (!partyNext) el.querySelector('[data-act=again]').setAttribute('data-primary', '');
-  wireMode(el, game);
+  wireMode(el, game); wireOptions(el, game);
   sfx.drumroll(1.1); setTimeout(() => { sfx.fanfare(); sfx.applause(); confetti($('#confetti')); }, 1150);
   if (sorted.length > 1 && sorted[0].score > 0) setTimeout(() => say(`${winner.name} wins ${game.name}!`), 1300);
   return waitAction(el);
@@ -325,6 +327,21 @@ function wireMode(el, game) {
     el.querySelectorAll('[data-mode]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
     el.querySelector('.mode-note').textContent = modeNote(game, b.dataset.mode);
   }));
+}
+
+// game-specific choices declared as `options` on the game (shown on the start screen and podium)
+function optionControls(game) {
+  return (game.options || []).map((o) => {
+    const v = optFor(game, o.key);
+    return `<div class="mode-pick" data-opt="${o.key}"><span class="mode-label">${esc(o.label)}</span>
+      <div class="seg" role="group" aria-label="${esc(o.label)}">${o.choices.map(([k, l]) => `<button type="button" data-optval="${k}" aria-pressed="${v === k}">${esc(l)}</button>`).join('')}</div></div>`;
+  }).join('');
+}
+function wireOptions(el, game) {
+  el.querySelectorAll('[data-opt]').forEach((box) => box.querySelectorAll('[data-optval]').forEach((b) => (b.onclick = () => {
+    setGameOption(game.id, box.dataset.opt, b.dataset.optval); sfx.tick();
+    box.querySelectorAll('[data-optval]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  })));
 }
 
 // Deal n items from a pool, preferring ones nobody has seen yet this party, so games don't repeat.
@@ -349,6 +366,7 @@ function makeApi(game, player, index, order) {
     get W() { return W; }, get H() { return H; },
     get u() { return Math.min(W / 1100, H / 720); },
     get outlines() { return state.settings.outlines !== false; },
+    option: (key) => optFor(game, key),
     add(n, x, y, label, color) {
       api.score = Math.max(0, api.score + n);
       if (x != null) fx.float(x, y, label ?? (n > 0 ? `+${n}` : `${n}`), { color: color || (n >= 0 ? C.sun : C.red), size: 40 * api.u + 8 });
