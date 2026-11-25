@@ -108,3 +108,50 @@ export function drawFaceOutline(g, api, face, { color = 'rgba(255,246,232,.85)',
   for (const line of FACE_LINES) { const a = P(line[0]); g.moveTo(a.x, a.y); for (const i of line.slice(1)) { const p = P(i); g.lineTo(p.x, p.y); } }
   g.stroke(); g.restore();
 }
+
+// ---------- hand gestures ----------
+// Which fingers are up: [thumb, index, middle, ring, pinky]. A finger is up when its tip is clearly
+// further from the wrist than its middle joint; the thumb when its tip is well away from the palm.
+export function fingersUp(P) {
+  const w = P[0], palm = Math.hypot(P[9].x - w.x, P[9].y - w.y) || 1;
+  const d = (a, b) => Math.hypot(P[a].x - P[b].x, P[a].y - P[b].y);
+  const up = (tip, pip) => d(tip, 0) > d(pip, 0) * 1.12;
+  return [d(4, 9) > palm * 0.72 && d(4, 5) > palm * 0.35, up(8, 6), up(12, 10), up(16, 14), up(20, 18)];
+}
+export const fingerCount = (P) => fingersUp(P).filter(Boolean).length;
+export function rpsGesture(P) { const f = fingersUp(P); const n = f[1] + f[2] + f[3] + f[4]; return n >= 3 ? 'paper' : n === 2 ? 'scissors' : 'rock'; }
+
+// Pinch cursors: one per visible hand, placed between the thumb tip (4) and index tip (8).
+// cursor = { x, y, pinch, down (just pinched), up (just let go), dead (hand lost), P, color }
+const PINCH_COLORS = [C.mint, C.pink];
+export function makePinch(api) {
+  const list = [];
+  return {
+    list,
+    update(now) {
+      for (let i = list.length - 1; i >= 0; i--) if (list[i].dead) list.splice(i, 1);
+      const used = new Set();
+      for (const h of api.vision.hands || []) {
+        const P = handScreen(api, h);
+        const size = Math.hypot(P[0].x - P[9].x, P[0].y - P[9].y) || 1;
+        const ratio = Math.hypot(P[4].x - P[8].x, P[4].y - P[8].y) / size;
+        const raw = { x: (P[4].x + P[8].x) / 2, y: (P[4].y + P[8].y) / 2 };
+        let c = null, bd = Infinity;
+        for (const k of list) { const dd = Math.hypot(k.x - raw.x, k.y - raw.y); if (!used.has(k) && dd < bd) { bd = dd; c = k; } }
+        if (!c && list.length < 2) { c = { x: raw.x, y: raw.y, pinch: false, color: PINCH_COLORS.find((col) => !list.some((k) => k.color === col)) || C.mint }; list.push(c); }
+        if (!c) continue;
+        used.add(c); c.seen = now; c.P = P;
+        c.x += (raw.x - c.x) * 0.6; c.y += (raw.y - c.y) * 0.6;
+        const was = c.pinch; c.pinch = was ? ratio < 0.5 : ratio < 0.3;   // closes tight, opens wide: no flicker
+        c.down = c.pinch && !was; c.up = !c.pinch && was;
+      }
+      for (const c of list) if (!used.has(c)) { c.down = false; c.up = false; if (now - c.seen > 450) { c.up = c.pinch; c.pinch = false; c.dead = true; } }
+      return list;
+    },
+  };
+}
+export function drawPinch(g, api, c) {
+  const u = api.u;
+  if (api.outlines && c.P) drawHand(g, c.P, { color: c.color, lw: Math.max(3, 4 * u), tip: false });
+  circle(g, c.x, c.y, (c.pinch ? 12 : 20) * u, c.pinch ? c.color : 'rgba(255,255,255,.22)', { lw: 4, stroke: c.pinch ? C.ink : c.color });
+}

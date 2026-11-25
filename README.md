@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-FF2E88"></a>
-  <img alt="Games: 17" src="https://img.shields.io/badge/games-17-FFD23F">
+  <img alt="Games: 29" src="https://img.shields.io/badge/games-29-FFD23F">
   <img alt="No build step" src="https://img.shields.io/badge/build-none-3DF5C4">
   <img alt="Installable PWA" src="https://img.shields.io/badge/PWA-installable-4DA8FF">
   <img alt="Powered by MediaPipe" src="https://img.shields.io/badge/tracking-MediaPipe-7B2FFF">
@@ -52,13 +52,13 @@
 
 ## About
 
-Yellfie is a pack of 17 short party games for a group around one laptop or TV. Players type their names, then take turns in front of the screen. They shout to fly a bird, hum to steer a rocket, pull faces to match emoji, slice fruit with a fingertip, and duck through a hole in a brick wall. Each round ends on a podium and adds to a party leaderboard.
+Yellfie is a pack of 29 short party games for a group around one laptop or TV. Players type their names, then take turns in front of the screen. They shout to fly a bird, hum to steer a rocket, pull faces to match emoji, slice fruit with a fingertip, pinch floating eyes and lips onto a blank face, race to rebuild a jigsaw of their own selfie, and jog and jump for real to run a hero through a platform level. Each round ends on a podium and adds to a party leaderboard.
 
 There is **no server, no account and no database**. It's a static web page: camera frames and audio are analysed locally with [MediaPipe](https://developers.google.com/mediapipe) (WebAssembly) and the Web Audio API.
 
 ## Features
 
-- **17 games**: 8 controlled by voice, 9 by camera (face, body and hand tracking).
+- **29 games**: 12 controlled by voice, 17 by camera (face, body and hand tracking, including pinch and finger-counting gestures).
 - **Players and party points**: add names and an animal avatar, then watch the standings update after every game. Scores persist in the browser until you reset them.
 - **Turn-based hot seat**: a "you're up" card, a 3-2-1 countdown, a score card with a quip, then the next player.
 - **Same or different challenges**: give every player identical faces, poses, walls or rhythms for a fair fight, or a fresh set each for variety. Challenges aren't repeated until the pool runs out.
@@ -75,10 +75,11 @@ There is **no server, no account and no database**. It's a static web page: came
 
 | | |
 |:---:|:---:|
+| <img src="docs/screenshots/facejumble.jpg" alt="Face Jumble" width="420"><br>Face Jumble | <img src="docs/screenshots/jigsaw.jpg" alt="Selfie Jigsaw" width="420"><br>Selfie Jigsaw |
 | <img src="docs/screenshots/setup.jpg" alt="Setup screen with player names" width="420"><br>Add the players | <img src="docs/screenshots/flappy.jpg" alt="Flappy Holler" width="420"><br>Flappy Holler |
 | <img src="docs/screenshots/roar.jpg" alt="Roar-o-Meter" width="420"><br>Roar-o-Meter | <img src="docs/screenshots/balloon.jpg" alt="Don't Pop It" width="420"><br>Don't Pop It |
 | <img src="docs/screenshots/tightrope.jpg" alt="Tightrope Tenor" width="420"><br>Tightrope Tenor | <img src="docs/screenshots/meteor.jpg" alt="Meteor Dodge" width="420"><br>Meteor Dodge |
-| <img src="docs/screenshots/podium.jpg" alt="Results podium" width="420"><br>Results podium | <img src="docs/screenshots/lobby.jpg" alt="Lobby" width="420"><br>Lobby |
+| <img src="docs/screenshots/podium.jpg" alt="Results podium" width="420"><br>Results podium | <img src="docs/screenshots/quest.jpg" alt="Jump Quest" width="420"><br>Jump Quest |
 
 ## Quick start
 
@@ -127,7 +128,7 @@ Installing needs the site to be served over `https://` (or `localhost`).
 
 ### Offline play
 
-- **After the first visit**, the app itself and the **voice games** work offline (except Tongue Twister Turbo, which needs the browser's online speech recognition).
+- **After the first visit**, the app itself and the **voice games** work offline (except Tongue Twister Turbo and Blurt It!, which need the browser's online speech recognition).
 - **Camera games** also need their trackers (about 32 MB). Each one is saved the first time you play a game that uses it. To save them all at once, use **Settings → Offline play → Download for offline**. Nothing large is downloaded unless you need it.
 
 ### Updates and performance
@@ -153,6 +154,10 @@ Measured side by side (median of 9 reloads, two rounds): page-ready time stayed 
 | 🎶 **Tightrope Tenor** | Hold one steady note to keep walking. Wobble or run out of breath and you fall. | Pitch stability |
 | 👏 **Clap Back** | Listen to a rhythm, then clap it back. Four rounds, each harder. | Clap timing |
 | 👅 **Tongue Twister Turbo** | Say a tongue twister once, fast and accurately. | Speech recognition |
+| 🚦 **Red Light, Loud Light** | Yell to run while the light is green. Any sound on red and the guard sends you back. | Loudness, on and off |
+| 🐉 **Don't Wake the Dragon** | Whisper to tiptoe through the cave. Cross the red line and the dragon wakes. | Quiet control |
+| 🎼 **Sing It Back** | Hear a note, sing it back and hold it. Any octave counts. | Pitch accuracy |
+| 💬 **Blurt It!** | Shout as many fruits, animals or countries as you can in 15 seconds. | Speech recognition |
 | 🐸 **Hup Hop** | Short shouts make a frog jump the logs. Stay quiet under the bees. | Sound bursts |
 
 ### 📷 Camera games
@@ -168,6 +173,14 @@ Measured side by side (median of 9 reloads, two rounds): page-ready time stayed 
 | 😐 **Poker Face** | Keep a straight face while the screen gives you googly eyes and a moustache. | Smile and jaw |
 | 🧙 **Simon Says** | Obey the spoken commands, but only when Simon says so. | Body pose and fingertips |
 | ☄️ **Meteor Dodge** | Steer a rocket with your head to dodge meteors. | Head position |
+| 😶 **Face Jumble** | Pinch the floating eyes, nose and lips and drop them on a blank face. The most accurate face wins. | Pinch gesture (both hands) |
+| 🧩 **Selfie Jigsaw** | Pull a face for a photo, then pinch and drag the jigsaw pieces back together. Fastest finish wins. | Pinch gesture (both hands) |
+| ⚽ **Header Hero** | Keep a ball in the air with your head. Five in a row and headers count double. | Head position and speed |
+| 🐔 **Wing It** | Flap your arms like wings to fly a chicken through the gaps. | Arm sweeps |
+| 🕺 **Freeze Dance** | Dance while the music plays, freeze like a statue when it stops. | Body movement |
+| ✌️ **Rock Paper Scissors** | Beat the robot over five rounds with a real hand. | Hand shapes |
+| 🖐️ **Finger Maths** | Answer quick sums by holding up the right number of fingers. | Finger counting (both hands) |
+| 🏃 **Jump Quest** | A side-scrolling platformer you play with your body: jog on the spot to run, jump for real to clear crates, pits and critters, crouch to duck under bats. Reach the flag in 60 seconds. | Arm and knee pumping, shoulder height |
 
 ## Scoring
 
@@ -180,6 +193,8 @@ Every game ranks the round's players and awards **party points**:
 - Ties share a place.
 - A score of zero earns 1 point and never counts as a win.
 - Each game keeps a **party record** (best score and who set it), shown on its tile.
+- Two games score differently on screen but rank the same way: **Selfie Jigsaw** shows your solving time (fastest wins; unfinished puzzles rank by pieces placed), and **Face Jumble** shows accuracy as a percentage.
+- **Jump Quest** adds up 2 points a metre, 5 a coin, 15 for each critter you land on, and a bonus for reaching the flag (100 plus 5 for every second left).
 - Players, points, wins and records are stored in `localStorage` until you use **Reset scores** or **End party** in Settings. Photos are kept in memory only.
 
 ## Settings
@@ -196,9 +211,9 @@ Open the ⚙️ button in the lobby.
 | Show tracking outlines | Draws your hand skeleton, face outline and arms during camera games. |
 | Install as an app | Shows whether Yellfie is installed, with an **Install** button where the browser supports it. |
 | Offline play | Shows how many trackers are saved, with **Download for offline** to save all of them (about 32 MB). |
-| Challenges in a round | **Different for each player** (default) or **Same for everyone**, for the 7 games with set challenges. You can also switch it per game on its start screen or the podium. |
+| Challenges in a round | **Different for each player** (default) or **Same for everyone**, for the games with set challenges (faces, poses, rhythms, puzzles and so on). You can also switch it per game on its start screen or the podium. |
 
-Some games also have their own options on their start screen (and on the podium before **Play again**), remembered between parties. For example, Fruit Karate's **Sword length**: Fingertip only, Small (default), Medium or Large.
+Some games also have their own options on their start screen (and on the podium before **Play again**), remembered between parties. For example: Fruit Karate's **Sword length**, Selfie Jigsaw's **Pieces** (6 to 16) and **Picture**, Face Jumble's **Guide marks**, and Sing It Back's **Tuner**.
 | Reset scores / End party | Reset keeps the players and clears points, records and photos. End party removes everything. |
 
 ## Keyboard shortcuts
@@ -214,9 +229,9 @@ Yellfie is developed and tested in **Google Chrome** on desktop. The other brows
 
 | Browser | Status |
 | --- | --- |
-| Chrome / Edge (desktop) | ✅ All 17 games |
+| Chrome / Edge (desktop) | ✅ All 29 games |
 | Safari (macOS) | Expected to work, untested |
-| Firefox | Expected to work except **Tongue Twister Turbo**, which needs the Web Speech API that Firefox lacks |
+| Firefox | Expected to work except **Tongue Twister Turbo** and **Blurt It!**, which need the Web Speech API that Firefox lacks |
 | Phones and tablets | Works and can be installed as an app; the layout keeps clear of notches. The games are designed for a laptop-sized screen viewed from a few steps away, so a tablet or phone propped up works best |
 
 ## Deploying
@@ -238,7 +253,7 @@ If you ever **change** the files in `vendor/` (for example a newer MediaPipe), b
 ## Privacy
 
 - Camera frames and microphone audio are processed **locally** in your browser by JavaScript and WebAssembly. Nothing is recorded, stored on a server or sent anywhere.
-- **Exception:** Tongue Twister Turbo uses the browser's built-in speech recognition. In Chrome and Edge that sends the audio to the browser maker's service to transcribe. The game says so on its ready screen.
+- **Exception:** Tongue Twister Turbo and Blurt It! use the browser's built-in speech recognition. In Chrome and Edge that sends the audio to the browser maker's service to transcribe. The game says so on its ready screen.
 - Scores live in your browser's `localStorage`. Photo-booth pictures live in memory and disappear when you close the tab.
 
 ## Troubleshooting
@@ -292,9 +307,9 @@ If `vendor/` is missing, the first camera game downloads the trackers (~10–15 
 </details>
 
 <details>
-<summary><b>Tongue Twister Turbo is greyed out or never hears anything</b></summary>
+<summary><b>Tongue Twister Turbo or Blurt It! is greyed out or never hears anything</b></summary>
 
-It needs a browser with the Web Speech API (Chrome, Edge, Safari) and, in Chrome and Edge, an internet connection.
+They need a browser with the Web Speech API (Chrome, Edge, Safari) and, in Chrome and Edge, an internet connection.
 </details>
 
 ## Development
@@ -347,6 +362,9 @@ Open `http://localhost:8080/?sim` to play without a camera or mic:
 | <kbd>C</kbd> | A clap |
 | <kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> | Arm poses (down, up, left, right, T, hands on head, nose, eyes, wings, mouse-controlled hand) |
 | Mouse | Head position and the pointing hand's fingertip |
+| Mouse button or <kbd>X</kbd> | Pinch (for Face Jumble and Selfie Jigsaw) |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | How many fingers the hands show, 0–10 (<kbd>Backspace</kbd> returns to a pointing hand) |
+| Hold <kbd>R</kbd>, tap <kbd>J</kbd>, hold <kbd>N</kbd> | Jog on the spot, jump, crouch (for Jump Quest) |
 | <kbd>S</kbd> <kbd>O</kbd> <kbd>B</kbd> <kbd>W</kbd> <kbd>K</kbd> <kbd>U</kbd> <kbd>D</kbd> <kbd>F</kbd> <kbd>P</kbd> <kbd>L</kbd> <kbd>Q</kbd> | Smile, open jaw, blink, wink, pucker, brows up, brows down, frown, puff cheeks, look up, squint |
 
 In this mode `window.__yf` exposes the simulator, mic, vision and engine state for automated tests.
@@ -402,7 +420,9 @@ export default {
 | `option(key)` | The player's choice for one of the game's `options` |
 | `outlines`, `u`, `W`, `H`, `time` | Outline setting, UI scale unit, canvas size, seconds since start |
 
-Optional game fields: `ready` (text on the "you're up" card), `format(score)`, `quip(score)` (a line on the score card).
+Optional game fields: `ready` (text on the "you're up" card), `format(score)`, `quip(score)` (a line on the score card), `secretScore: true` (hide the score until the turn ends), and `unit: ''` when `format` already includes the unit.
+
+`js/games/body.js` has shared helpers for camera games: `screenBody` (arms in screen pixels), `makePinch` (pinch-and-drag cursors), `fingersUp` / `fingerCount` / `rpsGesture` (hand shapes), and the outline drawers.
 
 ## Contributing
 

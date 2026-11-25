@@ -1,12 +1,14 @@
 // Developer mode (?sim in the URL): keyboard + mouse stand in for the mic and camera.
 // Space = voice (mouse height = pitch), C = clap, face keys S/O/B/W/K/U/D/F/P/L/Q,
-// number keys = arm poses, mouse = hands / head position.
+// number keys = arm poses, mouse = hands / head position, mouse button or X = pinch,
+// arrow up/down = how many fingers the hand(s) show (Backspace = back to a pointing hand),
+// hold R = jog on the spot, J = jump, hold N = crouch.
 import { mic } from './mic.js';
 import { vision, buildFace } from './vision.js';
 
 export const sim = {
   voice: 0, pitchY: 0.5, clap: false, mouse: { x: 0.5, y: 0.45 },
-  keys: new Set(), arms: 'down', faceOn: true, poseOn: true, blend: null, overrideLevel: null,
+  keys: new Set(), arms: 'down', faceOn: true, poseOn: true, blend: null, overrideLevel: null, pinch: false, fingers: null, run: false, duck: false, jumpUntil: 0,
 };
 const VW = 1280, VH = 720;
 const ARMS = {
@@ -23,10 +25,23 @@ export function enableSim() {
     if (k === ' ' && !e.repeat) sim.voice = 1;
     if (k === 'c' && !e.repeat) sim.clap = true;
     if (KEYMAP[k]) sim.arms = KEYMAP[k];
+    if (k === 'x') sim.pinch = true;
+    if (k === 'r') sim.run = true;
+    if (k === 'n') sim.duck = true;
+    if (k === 'j' && !e.repeat) sim.jumpUntil = performance.now() + 320;
+    if (k === 'arrowup') sim.fingers = Math.min(10, (sim.fingers ?? -1) + 1);
+    if (k === 'arrowdown') sim.fingers = Math.max(0, (sim.fingers ?? 1) - 1);
+    if (k === 'backspace') sim.fingers = null;
     sim.keys.add(k);
   });
-  addEventListener('keyup', (e) => { const k = e.key.toLowerCase(); if (k === ' ') sim.voice = 0; sim.keys.delete(k); });
-  addEventListener('pointermove', (e) => { sim.mouse = { x: e.clientX / innerWidth, y: e.clientY / innerHeight }; sim.pitchY = sim.mouse.y; });
+  addEventListener('keyup', (e) => { const k = e.key.toLowerCase(); if (k === ' ') sim.voice = 0; if (k === 'x') sim.pinch = false; if (k === 'r') sim.run = false; if (k === 'n') sim.duck = false; sim.keys.delete(k); });
+  addEventListener('pointerdown', () => { sim.pinch = true; });
+  addEventListener('pointerup', () => { sim.pinch = false; });
+  addEventListener('pointermove', (e) => {
+    // map the pointer through the same "cover" fit the camera view uses, so tracked points sit right under it
+    const s = Math.max(innerWidth / VW, innerHeight / VH), dw = VW * s, dh = VH * s;
+    sim.mouse = { x: (e.clientX - (innerWidth - dw) / 2) / dw, y: (e.clientY - (innerHeight - dh) / 2) / dh }; sim.pitchY = e.clientY / innerHeight;
+  });
 
   mic.sim = (now) => {
     const lv = sim.overrideLevel ?? sim.voice * 0.85;
@@ -40,11 +55,13 @@ export function enableSim() {
     if (sim.blend) Object.assign(blend, sim.blend);
     vision.face = sim.faceOn ? buildFace(fakeFace(sim.mouse.x, sim.mouse.y), blend, now) : null;
     vision.pose = sim.poseOn ? { pts: fakePose(sim.arms), t: now } : null;
-    vision.hands = sim.poseOn ? [fakeHand(sim.mouse.x, sim.mouse.y, now)] : [];
+    const n = sim.fingers, ext = (k) => [k >= 5, k >= 1, k >= 2, k >= 3, k >= 4];
+    vision.hands = !sim.poseOn ? [] : n == null ? [fakeHand(sim.mouse.x, sim.mouse.y, now, [true, true, false, false, false], sim.pinch)]
+      : n > 5 ? [fakeHand(sim.mouse.x, sim.mouse.y, now, ext(5)), fakeHand(sim.mouse.x + 0.2, sim.mouse.y, now, ext(n - 5))] : [fakeHand(sim.mouse.x, sim.mouse.y, now, ext(n))];
   };
   window.__yf = { sim, mic, vision };
   const tag = document.createElement('div');
-  tag.textContent = 'SIM MODE · Space=voice · C=clap · 1-0=arms · S/O/B/W/K/U/D/F/P/L/Q=face';
+  tag.textContent = 'SIM MODE · Space=voice · C=clap · 1-0=arms · S/O/B/W/K/U/D/F/P/L/Q=face · click/X=pinch · ↑↓=fingers · R=jog · J=jump · N=crouch';
   Object.assign(tag.style, { position: 'fixed', bottom: '4px', right: '6px', zIndex: 99, font: '12px monospace', color: '#fff', background: '#000a', padding: '3px 6px', borderRadius: '6px', pointerEvents: 'none' });
   document.body.append(tag);
 }
@@ -58,12 +75,19 @@ function fakeFace(cx, cy) {
   return pts;
 }
 
-function fakeHand(mx, my, now) {
-  // pointing hand in video pixels: index tip (8) at the mouse, wrist below it
-  const o = { x: mx * VW, y: my * VH }; const P = [];
-  const rel = [[10, 150], [-25, 125], [-45, 100], [-55, 80], [-62, 62], [-8, 70], [-4, 40], [-2, 18], [0, 0], [12, 74], [22, 70], [22, 88], [18, 100], [30, 82], [34, 88], [30, 100], [26, 108], [42, 92], [44, 100], [40, 108], [36, 114]];
-  for (const [dx, dy] of rel) P.push({ x: (o.x + dx) / VW, y: (o.y + dy) / VH, z: 0 });
-  return { pts: P, t: now };
+// A hand in video pixels, wrist at the bottom and fingers pointing up. `ext` says which fingers are
+// straight: [thumb, index, middle, ring, pinky]. The index tip (or the knuckles of a fist) sits at the mouse.
+const MCP = [[-22, -22], [-18, -76], [0, -80], [16, -76], [30, -68]];
+function fakeHand(mx, my, now, ext, pinch = false) {
+  const L = [[0, 0]];
+  if (ext[0]) L.push([-22, -22], [-38, -42], [-52, -58], [-64, -72]); else L.push([-22, -22], [-32, -44], [-30, -56], [-12, -62]);
+  for (let f = 1; f < 5; f++) {
+    const [x, y] = MCP[f];
+    if (ext[f]) L.push([x, y], [x, y - 32], [x, y - 54], [x, y - 74]); else L.push([x, y], [x, y - 22], [x + 4, y - 6], [x + 4, y + 14]);
+  }
+  if (pinch) L[4] = [L[8][0] + 4, L[8][1] + 4];
+  const a = ext[1] ? L[8] : L[9];
+  return { pts: L.map(([x, y]) => ({ x: (mx * VW + x - a[0]) / VW, y: (my * VH + y - a[1]) / VH, z: 0 })), t: now };
 }
 
 function fakePose(name) {
@@ -84,6 +108,13 @@ function fakePose(name) {
     arm(sL, 100, 95, 13, 15, 19);
     const m = { x: sim.mouse.x * VW, y: sim.mouse.y * VH }; put(16, m.x, m.y); put(20, m.x, m.y - 20); put(14, (sR.x + m.x) / 2 + 40, (sR.y + m.y) / 2);
   }
+  // whole-body moves: jogging pumps the wrists and knees in turn, jumping and crouching shift everything
+  const t = performance.now(), lift = (sim.duck ? -0.6 : t < sim.jumpUntil ? 0.45 : 0) * sw;
+  if (sim.run) {
+    const s = Math.sin((t / 1000) * Math.PI * 2 * 1.6); // 1.6 arm cycles a second = 3.2 steps a second
+    P[15].y -= sw * 0.4 * (1 + s); P[16].y -= sw * 0.4 * (1 - s);
+    put(25, mid.x - sw * 0.3, mid.y + sw * 2.6 - sw * 0.2 * (1 - s)); put(26, mid.x + sw * 0.3, mid.y + sw * 2.6 - sw * 0.2 * (1 + s));
+  }
   // sim coordinates are already "screen" (mirrored) space
-  return P.map((p) => ({ x: p.x / VW, y: p.y / VH, v: p.v }));
+  return P.map((p) => ({ x: p.x / VW, y: (p.y - lift) / VH, v: p.v }));
 }

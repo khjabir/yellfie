@@ -239,9 +239,10 @@ input[type=range] { accent-color: var(--pink); width: 180px; }
 .hud-timer { position: absolute; top: 0; left: 0; right: 0; height: 10px; background: rgba(26,16,51,.6); }
 .hud-timer i { display: block; height: 100%; width: 100%; background: var(--sun); transform-origin: left; border-right: 3px solid var(--ink); }
 .hud-hint {
-  position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%);
+  /* centred with auto margins (not left:50%), so long hints can use the full width on phones */
+  position: absolute; left: 12px; right: 12px; bottom: 22px; margin: 0 auto; width: fit-content;
   background: var(--ink); color: var(--cream); padding: 10px 20px; border-radius: 16px; border: 3px solid var(--cream);
-  font-weight: 800; font-size: 1.3rem; max-width: min(90vw, 760px); text-align: center;
+  font-weight: 800; font-size: 1.3rem; max-width: min(calc(100% - 24px), 760px); text-align: center;
 }
 .stage-exit { position: absolute; top: calc(80px + var(--sat)); left: calc(14px + var(--sal)); pointer-events: auto; z-index: 8; }
 .stage-exit .btn { min-height: 40px; padding: .35em .9em; font-size: .9rem; }
@@ -331,6 +332,7 @@ input[type=range] { accent-color: var(--pink); width: 180px; }
   .hud-player { font-size: 1rem; }
   .hud-player .av { width: 36px; height: 36px; font-size: 1.2rem; }
   .hud-game { display: none; }
+  .hud-hint { font-size: 1rem; padding: 8px 14px; bottom: 14px; }
   .step { width: 100px; }
   .card { padding: 18px; }
 }

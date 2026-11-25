@@ -3,15 +3,18 @@ import { handScreen, drawHand } from './body.js';
 
 const FRUITS = [['🍉', '#FF4D5E'], ['🍊', '#FF9F1C'], ['🍎', '#E63946'], ['🍍', '#FFD23F'], ['🥝', '#9BF54A'], ['🍓', '#FF2E55'], ['🍌', '#FFE66D'], ['🍇', '#9B5DE5'], ['🍑', '#FFA07A'], ['🥥', '#F1E3D3']];
 const BLADE_COLORS = [C.mint, C.pink];
+// sword length = finger length × factor, kept between min and max (in UI units)
+const BLADES = { tip: [0, 0, 0], small: [0.55, 28, 80], medium: [1.05, 50, 140], large: [1.6, 70, 210] };
 const DUR = 40;
 
 export default {
   id: 'fruit', name: 'Fruit Karate', emoji: '🍉', kind: 'camera', needs: ['hands'],
   tagline: 'Your index finger is a sword. Chop the flying fruit.',
-  howTo: ['Point your index finger at the screen. A glowing blade grows out of your fingertip.', 'Swipe the blade through the fruit, fast. Both hands work. Slice several at once for combos. Stars are worth 5.', 'Bombs cost a heart. Lose three hearts and you are out.'],
+  howTo: ['Point your index finger at the screen. A glowing sword grows out of your fingertip. Pick its length below.', 'Swipe the blade through the fruit, fast. Both hands work. Slice several at once for combos. Stars are worth 5.', 'Bombs cost a heart. Lose three hearts and you are out.'],
   crowd: 'Everyone else: shout "HIYAA!" on every chop.',
   ready: "Stand about an arm's length back and point your index finger at the screen.",
   unit: 'fruit',
+  options: [{ key: 'blade', label: 'Sword length', default: 'small', choices: [['tip', 'Fingertip only'], ['small', 'Small'], ['medium', 'Medium'], ['large', 'Large']] }],
   create(api) {
     let items = [], halves = [], t = 0, spawnT = 1.4, lives = 3, combo = [], over = false;
     const tracks = []; // one per visible hand: { tip, end, P, t, seen, trail, color }
@@ -28,10 +31,12 @@ export default {
       spawnT = rand(0.7, 1.15) * (t > 25 ? 0.8 : 1);
     }
 
-    // blade = fingertip (landmark 8) extended along the finger (5 → 8)
+    // blade = fingertip (landmark 8) extended along the finger (5 → 8); length from the game option
+    const [bk, bmin, bmax] = BLADES[api.option('blade')] || BLADES.small;
+    const hitPad = (bk ? 6 : 16) * api.u; // a bare fingertip gets a slightly bigger hit zone
     function blade(P) {
       const tip = P[8], base = P[5]; let dx = tip.x - base.x, dy = tip.y - base.y; const fl = Math.hypot(dx, dy) || 1; dx /= fl; dy /= fl;
-      const len = clamp(Math.max(fl, dist(P[0], P[9]) * 0.8) * 1.6, 70 * api.u, 210 * api.u);
+      const len = bk ? clamp(Math.max(fl, dist(P[0], P[9]) * 0.8) * bk, bmin * api.u, bmax * api.u) : 0;
       return { tip, end: { x: tip.x + dx * len, y: tip.y + dy * len } };
     }
     function trackHands(now) {
@@ -48,7 +53,7 @@ export default {
           if (speed > api.H * 0.45) {
             const mid0 = { x: (tr.tip.x + tr.end.x) / 2, y: (tr.tip.y + tr.end.y) / 2 }, mid1 = { x: (b.tip.x + b.end.x) / 2, y: (b.tip.y + b.end.y) / 2 };
             const segs = [[tr.tip, b.tip], [tr.end, b.end], [mid0, mid1], [b.tip, b.end]];
-            for (const it of items) if (!it.cut && segs.some(([a, c]) => segDist(it, a, c) < it.r * 0.95)) slice(it, { x: b.tip.x - tr.tip.x, y: b.tip.y - tr.tip.y });
+            for (const it of items) if (!it.cut && segs.some(([a, c]) => segDist(it, a, c) < it.r * 0.9 + hitPad)) slice(it, { x: b.tip.x - tr.tip.x, y: b.tip.y - tr.tip.y });
           }
         }
         tr.tip = b.tip; tr.end = b.end; tr.t = h.t; tr.trail.push({ tip: b.tip, end: b.end, at: now });
@@ -92,6 +97,14 @@ export default {
         for (const it of items) { if (it.kind === 'bomb') circle(g, it.x, it.y, it.r * 1.05, 'rgba(255,77,94,.25)', { lw: 0 }); emoji(g, it.ch, it.x, it.y, it.r * 2, it.rot); }
         for (const tr of tracks) {
           if (api.outlines && tr.P) drawHand(g, tr.P, { color: tr.color, lw: Math.max(3, 4 * u) });
+          if (!bk) {
+            // fingertip only: a glowing trail behind the tip
+            g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
+            for (let k = 1; k < tr.trail.length; k++) { const a = tr.trail[k - 1].tip, b = tr.trail[k].tip, f = k / tr.trail.length; g.globalAlpha = f; g.strokeStyle = tr.color; g.lineWidth = 22 * u * f; g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke(); }
+            g.restore();
+            if (tr.tip) { circle(g, tr.tip.x, tr.tip.y, 18 * u, tr.color, { lw: 4 }); circle(g, tr.tip.x, tr.tip.y, 7 * u, '#fff', { lw: 0 }); }
+            continue;
+          }
           // sweep ribbon
           g.save(); g.fillStyle = tr.color;
           for (let k = 1; k < tr.trail.length; k++) {

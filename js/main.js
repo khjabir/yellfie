@@ -111,7 +111,7 @@ function renderLobby() {
     return `<button class="tile" data-kind="${g.kind}" data-id="${g.id}" ${why ? 'disabled' : ''}>
       <div class="tile-head"><span class="big emoji">${g.emoji}</span><span class="kind">${g.kind === 'voice' ? '🎤 Voice' : '📷 Camera'}</span></div>
       <div class="tile-body"><h3>${esc(g.name)}</h3><p>${esc(g.tagline)}</p>
-      ${why ? `<span class="warn">${why}</span>` : `<span class="record">${rec ? `Record: <b>${esc(fmt(g, rec.score))} ${esc(g.unit || '')}</b> by ${esc(rec.name)}` : 'No record yet'}</span>`}</div>
+      ${why ? `<span class="warn">${why}</span>` : `<span class="record">${rec ? `Record: <b>${esc(`${fmt(g, rec.score)} ${g.unit || ''}`.trim())}</b> by ${esc(rec.name)}` : 'No record yet'}</span>`}</div>
     </button>`;
   }).join('');
   $('#grid').querySelectorAll('.tile').forEach((t) => (t.onclick = () => launch([GAMES.find((g) => g.id === t.dataset.id)])));

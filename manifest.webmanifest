@@ -18,7 +18,7 @@
     { "src": "assets/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ],
   "screenshots": [
-    { "src": "docs/screenshots/lobby.jpg", "sizes": "1280x800", "type": "image/jpeg", "form_factor": "wide", "label": "Pick from 17 voice and camera party games" },
+    { "src": "docs/screenshots/lobby.jpg", "sizes": "1280x800", "type": "image/jpeg", "form_factor": "wide", "label": "Pick from 29 voice and camera party games" },
     { "src": "docs/screenshots/roar.jpg", "sizes": "1280x800", "type": "image/jpeg", "form_factor": "wide", "label": "Roar-o-Meter: one giant roar to ring the bell" },
     { "src": "docs/screenshots/mobile-lobby.jpg", "sizes": "780x1688", "type": "image/jpeg", "form_factor": "narrow", "label": "Party standings and games" },
     { "src": "docs/screenshots/mobile-setup.jpg", "sizes": "780x1688", "type": "image/jpeg", "form_factor": "narrow", "label": "Add the players" }

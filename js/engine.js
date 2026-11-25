@@ -69,8 +69,9 @@ function hudSetup(p, game) {
   hudCache = {}; hudTimer(null); hudHint('');
 }
 function updateHud() {
-  const s = fmt(cur.game, cur.api.score);
-  if (hudCache.s !== s) { hudCache.s = s; $('#hudScore').innerHTML = `${esc(s)}<small>${esc(cur.game.unit || 'points')}</small>`; }
+  // games with a secret score (e.g. Face Jumble) only reveal it at the end
+  const s = cur.game.secretScore && !cur.ended ? '?' : fmt(cur.game, cur.api.score);
+  if (hudCache.s !== s) { hudCache.s = s; $('#hudScore').innerHTML = `${esc(s)}<small>${esc(cur.game.unit ?? 'points')}</small>`; }
 }
 function hudTimer(frac) {
   const el = $('#hudTimer');
@@ -243,7 +244,7 @@ async function turn(game, order, i, done) {
     <div class="card panel" style="--c:${p.color}">
       <div class="order">${chip(p)}</div>
       <div class="turn-score">${esc(fmt(game, score))}</div>
-      <div class="turn-unit">${esc(game.unit || 'points')}</div>
+      <div class="turn-unit">${esc(game.unit ?? 'points')}</div>
       ${isRecord ? '<span class="badge-new">New party record!</span>' : ''}
       <p class="quip">${esc(quip)}</p>
       ${snaps.length ? `<div class="snaps">${snaps.map(snapHtml).join('')}</div>` : ''}
